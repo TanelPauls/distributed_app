@@ -38,11 +38,11 @@ app.post('/posts/:id/comments', (req,res) => {
 });
 
 app.post('/events', (req,res) => {
-    console.log('Received Event:', req.body);
     res.json({ });
 });
 
 
 app.listen(5001, "0.0.0.0", () => {
+        console.log('Comments service.');
         console.log('App is started at http://localhost:5001');
     });

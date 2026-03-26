@@ -39,11 +39,11 @@ app.post('/posts', async (req,res) =>{
 });
 
 app.post('/events', (req,res) => {
-    console.log('Received Event:', req.body);
     res.json({ });
 });
 
 
 app.listen(5000, "0.0.0.0", () => {
+        console.log('Posts service.');
         console.log('App is started at http://localhost:5000');
     });

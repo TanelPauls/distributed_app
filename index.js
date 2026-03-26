@@ -1,9 +1,25 @@
+console.log("=== THIS FILE IS RUNNING ===");
 const express = require('express');
 const { randomBytes } = require('node:crypto');
+const cors = require('cors');
 
 const app = express();
+app.use((req, res, next) => {
+    console.log('Incoming:', req.method, req.url);
+    next();
+});
+
+app.use(cors({
+    origin: 'http://localhost:5173'
+}));
+app.use((req, res, next) => {
+    res.setHeader('X-Debug', 'hit');
+    next();
+});
 app.use(express.json());
- const posts = [];
+
+const posts = [];
+
 
 app.get('/posts', (req,res) => {
     res.json(posts);

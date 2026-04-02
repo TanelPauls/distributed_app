@@ -30,10 +30,16 @@ app.post('/events', async (req, res)=> {
         console.log('Error forwarding to query service', err.message);
     }
 
+    try {
+        await axios.post('http://localhost:5003/events', event);
+    } catch (err) {
+        console.log('Error forwarding to moderation service', err.message);
+    }
+
     res.json({status: 'ok'});
 });
 
 app.listen(5005, "0.0.0.0", () => {
-        console.log('event-bus service.');
-        console.log('App is started at http://localhost:5005');
-    });
+    console.log('event-bus service.');
+    console.log('App is started at http://localhost:5005');
+});

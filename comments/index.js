@@ -28,7 +28,7 @@ app.post('/posts/:id/comments', (req,res) => {
     };
     postComments.push(comment);
 
-    axios.post('http://localhost:5005/events', {
+    axios.post('http://event-bus:5005/events', {
         type: 'CommentCreated',
         data: comment
     }).catch((err) => {
@@ -48,7 +48,7 @@ app.post('/events', async (req, res) => {
         }
         comment.status = status;
         try {
-            await axios.post('http://localhost:5005/events', {
+            await axios.post('http://event-bus:5005/events', {
                 type: 'CommentUpdated',
                 data: {
                     id,

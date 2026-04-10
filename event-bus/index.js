@@ -13,25 +13,25 @@ app.post('/events', async (req, res)=> {
     const event = req.body;
 
     try {
-        await axios.post('http://localhost:5000/events', event);
+        await axios.post('http://posts:5000/events', event);
     } catch (err) {
         console.log('Error forwarding to posts service', err.message);
     }
 
     try {
-        await axios.post('http://localhost:5001/events', event);
+        await axios.post('http://comments:5001/events', event);
     } catch (err) {
         console.log('Error forwarding to comments service', err.message);
     }
 
     try {
-        await axios.post('http://localhost:5002/events', event);
+        await axios.post('http://query:5002/events', event);
     } catch (err) {
         console.log('Error forwarding to query service', err.message);
     }
 
     try {
-        await axios.post('http://localhost:5003/events', event);
+        await axios.post('http://moderation:5003/events', event);
     } catch (err) {
         console.log('Error forwarding to moderation service', err.message);
     }

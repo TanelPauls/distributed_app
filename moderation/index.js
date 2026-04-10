@@ -33,7 +33,7 @@ app.post('/events', (req, res) => {
     };
     console.log(moderatedComment);
 
-    axios.post('http://localhost:5005/events', {
+    axios.post('http://event-bus:5005/events', {
         type: 'CommentModerated',
         data: moderatedComment
     }).catch((err) => {

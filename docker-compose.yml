@@ -26,3 +26,28 @@ services:
     depends_on:
       - nginx
     restart: unless-stopped
+
+  client:
+    build: ./client/
+    depends_on:
+      - nginx
+      - event-bus
+      - moderation
+      - posts
+      - query
+  
+  comments:
+    build: ./comments/
+
+  event-bus:
+    build: ./event-bus/
+
+  moderation:
+    build: ./moderation/
+
+  posts:
+    build: ./posts/
+  
+  query:
+    build: ./query/
+  

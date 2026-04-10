@@ -17,7 +17,7 @@ app.get('/posts/:id/comments', (req,res) => {
     res.json(postComments.filter(comment => comment.postId === req.params.id));
 });
 
-app.post('/posts/:id/comments', (req,res) => {
+app.post('/posts/:id/comments', async (req,res) => {
     const postId = req.params.id;
     const content = req.body.content;
     const comment = {
@@ -28,12 +28,14 @@ app.post('/posts/:id/comments', (req,res) => {
     };
     postComments.push(comment);
 
-    axios.post('http://event-bus:5005/events', {
-        type: 'CommentCreated',
-        data: comment
-    }).catch((err) => {
+    try {
+        await axios.post('http://event-bus:5005/events', {
+            type: 'CommentCreated',
+            data: comment
+        });
+    } catch (err) {
         console.log('Error sending event to event bus', err.message);
-    });
+    }
 
     res.status(201).json(comment);
 });

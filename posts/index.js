@@ -26,12 +26,14 @@ app.post('/posts', async (req,res) =>{
     };
     posts.push(post);
 
-    axios.post('http://event-bus:5005/events', {
-        type: 'PostCreated',
-        data: post
-    }).catch((err) => {
+    try {
+        await axios.post('http://event-bus:5005/events', {
+            type: 'PostCreated',
+            data: post
+        });
+    } catch (err) {
         console.log('Error sending event to event bus', err.message);
-    });
+    }
 
     res.status(201).json({
         post: post

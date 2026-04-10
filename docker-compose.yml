@@ -11,6 +11,10 @@ services:
     volumes:
       - ./infra/nginx:/config
     restart: unless-stopped
+    depends_on:
+      - client
+    networks:
+      - app
 
   cloudflared:
     build: ./infra/cloudflared
@@ -26,28 +30,47 @@ services:
     depends_on:
       - nginx
     restart: unless-stopped
+    networks:
+      - app
 
   client:
     build: ./client/
     depends_on:
-      - nginx
       - event-bus
       - moderation
       - posts
       - query
+    networks:
+      - app
+    volumes:
+    - ./client:/app
+    - /app/node_modules
   
   comments:
     build: ./comments/
+    networks:
+      - app
+  
 
   event-bus:
     build: ./event-bus/
+    networks:
+      - app
 
   moderation:
     build: ./moderation/
+    networks:
+      - app
 
   posts:
     build: ./posts/
+    networks:
+      - app
   
   query:
     build: ./query/
-  
+    networks:
+      - app
+
+networks:
+  app:

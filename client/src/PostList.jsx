@@ -3,7 +3,7 @@ import axios from 'axios';
 import CommentsList from './CommentsList.jsx';
 import CommentCreate from './CommentCreate.jsx';
 
-const PostList = () => {
+const PostList = ({ refreshKey, onCreated }) => {
     const [posts, setPosts] = useState([]);
 
     useEffect(()=>{
@@ -17,7 +17,7 @@ const PostList = () => {
             }
         };
         fetchPosts();
-    }, []);
+    }, [refreshKey]);
 
     console.log(posts);
 
@@ -26,7 +26,7 @@ const PostList = () => {
             <div className="card-body">
                 <h3>{post.title}</h3>
                 <CommentsList comments={post.comments}/>
-                <CommentCreate postId={post.id}/>
+                <CommentCreate postId={post.id} onCreated={onCreated}/>
             </div>
         </div>
     ))

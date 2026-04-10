@@ -1,7 +1,7 @@
 import axios from 'axios';
 import { useState } from 'react';
 
-const PostCreate = () => {
+const PostCreate = ({ onCreated }) => {
     const [title, setTitle] = useState('');
 
     const onChange = (event) => {
@@ -10,8 +10,9 @@ const PostCreate = () => {
 
     const onSubmit = async (event) => {
         event.preventDefault();
-        await axios.post('/posts', {title})
-        setTitle('')
+        await axios.post('/posts', {title});
+        setTitle('');
+        onCreated();
     }
 
     return(

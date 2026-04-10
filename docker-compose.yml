@@ -1,0 +1,28 @@
+services:
+  nginx:
+    image: nginx:stable
+    environment:
+      - URL_00001=${CLOUDFLARED_URL}
+    command: 
+      /bin/sh -c "
+      envsubst '$$URL_00001' < /config/nginx.conf.template > /etc/nginx/nginx.conf &&
+      nginx -g 'daemon off;'
+      "
+    volumes:
+      - ./infra/nginx:/config
+    restart: unless-stopped
+
+  cloudflared:
+    build: ./infra/cloudflared
+    environment:
+      - CLOUDFLARE_TUNNEL_ID=${CLOUDFLARE_TUNNEL_ID}
+      - CLOUDFLARED_URL=${CLOUDFLARED_URL}
+    volumes:
+      - ./infra/cloudflared:/infra/cloudflared
+    command: -c "
+      envsubst < config.yml.template > config.yml &&
+      exec cloudflared --config config.yml tunnel run
+      "
+    depends_on:
+      - nginx
+    restart: unless-stopped

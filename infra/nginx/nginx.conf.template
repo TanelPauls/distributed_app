@@ -1,0 +1,13 @@
+events {}
+
+http {
+    server {
+        listen 80;
+        server_name ${URL_00001};
+
+
+        location / {
+            return 200 "hello from nginx\n";
+        }
+    }
+}

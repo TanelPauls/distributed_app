@@ -6,6 +6,6 @@ COPY package.json ./
 
 RUN npm install
 
-copy . .
+COPY . .
 
 CMD ["npm", "run", "dev"]

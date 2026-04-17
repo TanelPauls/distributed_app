@@ -33,7 +33,7 @@ spec:
           args:
             - >
               envsubst < /etc/cloudflared/config.yml.template > /etc/cloudflared/config.yml &&
-              cloudflared --config /etc/cloudflared/config.yml tunnel run
+              exec cloudflared --config /etc/cloudflared/config.yml tunnel run
 
           volumeMounts:
             - name: config

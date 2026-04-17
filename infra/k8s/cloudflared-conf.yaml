@@ -1,0 +1,14 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: cloudflared-config
+data:
+  config.yml.template: |
+    tunnel: ${TUNNEL_ID}
+    credentials-file: /etc/cloudflared/credentials.json
+
+    ingress:
+      - hostname: ${HOSTNAME}
+        service: http://nginx-serv:80
+
+      - service: http_status:404

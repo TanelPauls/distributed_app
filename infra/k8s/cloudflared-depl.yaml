@@ -1,0 +1,54 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: cloudflared
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: cloudflared
+  template:
+    metadata:
+      labels:
+        app: cloudflared
+    spec:
+      containers:
+        - name: cloudflared
+          image: tanelpauls/distributed_app_cloudflared
+
+          env:
+            - name: TUNNEL_ID
+              valueFrom:
+                secretKeyRef:
+                  name: cloudflared-secret
+                  key: tunnel-id
+
+            - name: HOSTNAME
+              valueFrom:
+                secretKeyRef:
+                  name: cloudflared-secret
+                  key: hostname
+
+          command: ["/bin/sh", "-c"]
+          args:
+            - >
+              envsubst < /etc/cloudflared/config.yml.template > /etc/cloudflared/config.yml &&
+              cloudflared --config /etc/cloudflared/config.yml tunnel run
+
+          volumeMounts:
+            - name: config
+              mountPath: /etc/cloudflared/config.yml.template
+              subPath: config.yml.template
+
+            - name: creds
+              mountPath: /etc/cloudflared/credentials.json
+              subPath: credentials.json
+
+      volumes:
+        - name: config
+          configMap:
+            name: cloudflared-config
+
+        - name: creds
+          secret:
+            secretName: cloudflared-secret

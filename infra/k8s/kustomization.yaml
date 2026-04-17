@@ -1,0 +1,19 @@
+resources:
+  - posts-depl.yaml
+  - posts-serv.yaml
+  - comments-depl.yaml
+  - comments-serv.yaml
+  - event-bus-depl.yaml
+  - event-bus-serv.yaml
+  - moderation-depl.yaml
+  - moderation-serv.yaml
+  - query-serv.yaml
+  - query-depl.yaml
+  - nginx-serv.yaml
+  - nginx-depl.yaml
+  - nginx-conf.yaml
+  - cloudflared-conf.yaml
+  - cloudflared-secret.yaml
+  - cloudflared-depl.yaml
+  - client-depl.yaml
+  - client-serv.yaml

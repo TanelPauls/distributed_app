@@ -27,3 +27,5 @@ dist-ssr
 .env
 /infra/cloudflared/*.json
 /infra/cloudflared/config.yml
+
+/infra/k8s/cloudflared-secret.yaml

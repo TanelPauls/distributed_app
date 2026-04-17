@@ -18,6 +18,7 @@ services:
 
   cloudflared:
     build: ./infra/cloudflared
+    image: tanelpauls/distributed_app_cloudflared
     environment:
       - CLOUDFLARE_TUNNEL_ID=${CLOUDFLARE_TUNNEL_ID}
       - CLOUDFLARED_URL=${CLOUDFLARED_URL}
@@ -35,6 +36,7 @@ services:
 
   client:
     build: ./client/
+    image: tanelpauls/distributed_app_client
     depends_on:
       - event-bus
       - moderation
@@ -48,27 +50,32 @@ services:
   
   comments:
     build: ./comments/
+    image: tanelpauls/distributed_app_comments
     networks:
       - app
   
 
   event-bus:
     build: ./event-bus/
+    image: tanelpauls/distributed_app_event-bus
     networks:
       - app
 
   moderation:
     build: ./moderation/
+    image: tanelpauls/distributed_app_moderation
     networks:
       - app
 
   posts:
     build: ./posts/
+    image: tanelpauls/distributed_app_posts
     networks:
       - app
   
   query:
     build: ./query/
+    image: tanelpauls/distributed_app_query
     networks:
       - app
 

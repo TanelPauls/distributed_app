@@ -36,6 +36,16 @@ spec:
                 secretKeyRef:
                   name: postgres-secret
                   key: POSTS_DB_PASSWORD
+            - name: DUMMY_USERNAME
+              valueFrom:
+                secretKeyRef:
+                  name: postgres-secret
+                  key: DUMMY_USERNAME
+            - name: DUMMY_PASSWORD_HASHED
+              valueFrom:
+                secretKeyRef:
+                  name: postgres-secret
+                  key: DUMMY_PASSWORD_HASHED
             - name: PGDATA
               value: /opt/dist_app_db_postgres/pgdata
           ports:

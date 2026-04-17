@@ -3,6 +3,7 @@ resources:
   - postgres-initdb-01.yaml
   - postgres-depl.yaml
   - postgres-serv.yaml
+  - postgres-pvc.yaml
   - posts-depl.yaml
   - posts-serv.yaml
   - comments-depl.yaml

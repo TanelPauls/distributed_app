@@ -10,15 +10,23 @@ data:
       REVOKE CREATE ON SCHEMA public FROM PUBLIC;
       REVOKE ALL ON SCHEMA public FROM PUBLIC;
 
-      CREATE SCHEMA dist_app;
+      CREATE SCHEMA IF NOT EXISTS dist_app;
 
-      CREATE ROLE $POSTS_DB_USER
-        LOGIN
-        PASSWORD '$POSTS_DB_PASSWORD'
-        NOSUPERUSER
-        NOCREATEDB
-        NOCREATEROLE
-        NOINHERIT;
+      DO $$
+      BEGIN
+        IF NOT EXISTS (
+          SELECT FROM pg_catalog.pg_roles WHERE rolname = '$POSTS_DB_USER'
+        ) THEN
+          CREATE ROLE $POSTS_DB_USER
+            LOGIN
+            PASSWORD '$POSTS_DB_PASSWORD'
+            NOSUPERUSER
+            NOCREATEDB
+            NOCREATEROLE
+            NOINHERIT;
+        END IF;
+      END
+      $$;
 
       GRANT USAGE ON SCHEMA dist_app TO $POSTS_DB_USER;
       GRANT SELECT, INSERT, UPDATE, DELETE ON ALL TABLES IN SCHEMA dist_app TO $POSTS_DB_USER;
@@ -30,7 +38,7 @@ data:
     #!/bin/bash
     set -e
     psql -v ON_ERROR_STOP=1 --username "$POSTGRES_USER" --dbname "$POSTGRES_DB" <<-EOSQL
-      CREATE TABLE dist_app.posts (
+      CREATE TABLE IF NOT EXISTS dist_app.posts (
         id         UUID        PRIMARY KEY DEFAULT gen_random_uuid(),
         title      TEXT        NOT NULL,
         created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
@@ -41,7 +49,7 @@ data:
     #!/bin/bash
     set -e
     psql -v ON_ERROR_STOP=1 --username "$POSTGRES_USER" --dbname "$POSTGRES_DB" <<-EOSQL
-      CREATE TABLE dist_app.comments (
+      CREATE TABLE IF NOT EXISTS dist_app.comments (
         id         UUID        PRIMARY KEY DEFAULT gen_random_uuid(),
         post_id    UUID        NOT NULL REFERENCES dist_app.posts(id) ON DELETE CASCADE,
         content    TEXT        NOT NULL,
@@ -54,7 +62,7 @@ data:
     #!/bin/bash
     set -e
     psql -v ON_ERROR_STOP=1 --username "$POSTGRES_USER" --dbname "$POSTGRES_DB" <<-EOSQL
-      CREATE TABLE dist_app.users (
+      CREATE TABLE IF NOT EXISTS dist_app.users (
         id         UUID        PRIMARY KEY DEFAULT gen_random_uuid(),
         email      TEXT        NOT NULL UNIQUE,
         password   TEXT        NOT NULL,
@@ -62,10 +70,11 @@ data:
       );
     EOSQL
 
-  05_add_dummy_user: |
+  05_add_dummy_user.sh: |
     #!/bin/bash
     set -e
     psql -v ON_ERROR_STOP=1 --username "$POSTGRES_USER" --dbname "$POSTGRES_DB" <<-EOSQL
       INSERT INTO dist_app.users (email, password)
-      VALUES ('admin@blog.local', 'qwerty');
+      VALUES ('$DUMMY_USERNAME', '$DUMMY_PASSWORD_HASHED')
+      ON CONFLICT (email) DO NOTHING;
     EOSQL

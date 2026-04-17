@@ -17,21 +17,21 @@ data:
 
             # Comments service
             location ~ ^/posts/.+/comments {
-                proxy_pass http://comments-serv:5001;
+                proxy_pass http://comments:5001;
             }
 
             # Posts - writes go to posts service, reads go to query service
             location = /posts {
                 if ($request_method = POST) {
-                    proxy_pass http://posts-serv:5000;
+                    proxy_pass http://posts:5000;
                 }
-                proxy_pass http://query-serv:5002;
+                proxy_pass http://query:5002;
             }
 
 
             # Frontend
             location / {
-                proxy_pass http://client-serv:5173;
+                proxy_pass http://client:5173;
 
                 # Required for Vite (WebSockets / HMR)
                 proxy_http_version 1.1;

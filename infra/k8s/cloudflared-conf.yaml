@@ -9,6 +9,6 @@ data:
 
     ingress:
       - hostname: ${HOSTNAME}
-        service: http://nginx-serv:80
+        service: http://nginx:80
 
       - service: http_status:404

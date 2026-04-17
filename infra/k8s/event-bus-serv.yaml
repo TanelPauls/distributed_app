@@ -1,7 +1,7 @@
 apiVersion: v1
 kind: Service
 metadata: 
-  name: event-bus-serv
+  name: event-bus
 spec:
   type: NodePort
   selector:

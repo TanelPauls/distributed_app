@@ -1,4 +1,7 @@
 resources:
+  - postgres-pvc.yaml
+  - postgres-depl.yaml
+  - postgres-serv.yaml
   - posts-depl.yaml
   - posts-serv.yaml
   - comments-depl.yaml

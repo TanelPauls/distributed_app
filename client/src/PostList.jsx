@@ -21,7 +21,7 @@ const PostList = ({ refreshKey, onCreated }) => {
 
     console.log(posts);
 
-    const postsForRender = Object.values(posts).map(post => (
+    const postsForRender = posts.map(post => (
         <div className="card" style={{ width: '30%', marginBottom: '20px'}} key={post.id}>
             <div className="card-body">
                 <h3>{post.title}</h3>

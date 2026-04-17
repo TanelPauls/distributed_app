@@ -26,3 +26,8 @@ spec:
                 secretKeyRef:
                   name: postgres-secret
                   key: POSTS_DB_PASSWORD
+            - name: JWT_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: postgres-secret
+                  key: JWT_SECRET

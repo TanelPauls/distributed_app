@@ -12,7 +12,7 @@ data:
 
       CREATE SCHEMA IF NOT EXISTS dist_app;
 
-      DO $$
+      DO \$body\$
       BEGIN
         IF NOT EXISTS (
           SELECT FROM pg_catalog.pg_roles WHERE rolname = '$POSTS_DB_USER'
@@ -26,7 +26,7 @@ data:
             NOINHERIT;
         END IF;
       END
-      $$;
+      \$body\$;
 
       GRANT USAGE ON SCHEMA dist_app TO $POSTS_DB_USER;
       GRANT SELECT, INSERT, UPDATE, DELETE ON ALL TABLES IN SCHEMA dist_app TO $POSTS_DB_USER;

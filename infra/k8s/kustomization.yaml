@@ -1,6 +1,6 @@
 resources:
   - postgres-secret.yaml
-  - postgres-initdb-cm.yaml
+  - postgres-initdb-01.yaml
   - postgres-depl.yaml
   - postgres-serv.yaml
   - posts-depl.yaml

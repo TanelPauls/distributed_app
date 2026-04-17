@@ -3,7 +3,7 @@ kind: ConfigMap
 metadata:
   name: postgres-initdb
 data:
-  01_init.sh: |
+  01_roles.sh: |
     #!/bin/bash
     set -e
     psql -v ON_ERROR_STOP=1 --username "$POSTGRES_USER" --dbname "$POSTGRES_DB" <<-EOSQL
@@ -24,13 +24,23 @@ data:
       GRANT SELECT, INSERT, UPDATE, DELETE ON ALL TABLES IN SCHEMA dist_app TO $POSTS_DB_USER;
       ALTER DEFAULT PRIVILEGES IN SCHEMA dist_app
         GRANT SELECT, INSERT, UPDATE, DELETE ON TABLES TO $POSTS_DB_USER;
+    EOSQL
 
+  02_posts.sh: |
+    #!/bin/bash
+    set -e
+    psql -v ON_ERROR_STOP=1 --username "$POSTGRES_USER" --dbname "$POSTGRES_DB" <<-EOSQL
       CREATE TABLE dist_app.posts (
         id         UUID        PRIMARY KEY DEFAULT gen_random_uuid(),
         title      TEXT        NOT NULL,
         created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
       );
+    EOSQL
 
+  03_comments.sh: |
+    #!/bin/bash
+    set -e
+    psql -v ON_ERROR_STOP=1 --username "$POSTGRES_USER" --dbname "$POSTGRES_DB" <<-EOSQL
       CREATE TABLE dist_app.comments (
         id         UUID        PRIMARY KEY DEFAULT gen_random_uuid(),
         post_id    UUID        NOT NULL REFERENCES dist_app.posts(id) ON DELETE CASCADE,
@@ -38,4 +48,24 @@ data:
         status     TEXT        NOT NULL DEFAULT 'pending',
         created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
       );
+    EOSQL
+
+  04_users.sh: |
+    #!/bin/bash
+    set -e
+    psql -v ON_ERROR_STOP=1 --username "$POSTGRES_USER" --dbname "$POSTGRES_DB" <<-EOSQL
+      CREATE TABLE dist_app.users (
+        id         UUID        PRIMARY KEY DEFAULT gen_random_uuid(),
+        email      TEXT        NOT NULL UNIQUE,
+        password   TEXT        NOT NULL,
+        created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+      );
+    EOSQL
+
+  05_add_dummy_user: |
+    #!/bin/bash
+    set -e
+    psql -v ON_ERROR_STOP=1 --username "$POSTGRES_USER" --dbname "$POSTGRES_DB" <<-EOSQL
+      INSERT INTO dist_app.users (email, password)
+      VALUES ('admin@blog.local', 'qwerty');
     EOSQL

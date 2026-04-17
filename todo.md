@@ -1,7 +1,6 @@
 - No resource limits — pods can starve each other, no requests/limits on CPU/memory                                
 - Single replicas — no redundancy, one crash = downtime                                                            
 - NodePort — production uses LoadBalancer or an Ingress controller                                                 
-- No health checks — no livenessProbe/readinessProbe, Kubernetes doesn't know if your app is actually healthy      
-- No persistent storage — if a pod restarts, any in-memory data (your posts/comments) is gone                      
+- No health checks — no livenessProbe/readinessProbe, Kubernetes doesn't know if your app is actually healthy                      
 - Images tagged latest — unpredictable, should use explicit version tags                                           
 - Vite dev server serving the frontend — should be a built static bundle behind nginx, not a dev server in prod    

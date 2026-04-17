@@ -18,7 +18,7 @@ const pool = new Pool({
     password: process.env.POSTS_DB_PASSWORD,
 });
 
-app.post('/auth/login', async (req, res) => {
+app.get('/login', async (req, res) => {
     const result = await pool.query(
         'SELECT * FROM dist_app.users',
     );

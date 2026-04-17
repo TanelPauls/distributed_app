@@ -42,6 +42,7 @@ services:
       - moderation
       - posts
       - query
+      - auth
     networks:
       - app
     volumes:
@@ -76,6 +77,12 @@ services:
   query:
     build: ./query/
     image: tanelpauls/distributed_app_query
+    networks:
+      - app
+
+  auth:
+    build: ./auth/
+    image: tanelpauls/distributed_app_auth
     networks:
       - app
 

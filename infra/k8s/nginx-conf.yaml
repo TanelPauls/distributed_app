@@ -28,6 +28,10 @@ data:
                 proxy_pass http://query:5002;
             }
 
+            # Auth
+            location = /auth {
+                proxy_pass http://auth:5006;
+            }
 
             # Frontend
             location / {

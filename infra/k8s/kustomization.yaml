@@ -21,3 +21,5 @@ resources:
   - cloudflared-depl.yaml
   - client-depl.yaml
   - client-serv.yaml
+  - auth-depl.yaml
+  - auth-serv.yaml

@@ -1,0 +1,33 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: postgres-initdb
+data:
+  01_init.sh: |
+    #!/bin/bash
+    set -e
+    psql -v ON_ERROR_STOP=1 --username "$POSTGRES_USER" --dbname "$POSTGRES_DB" <<-EOSQL
+      REVOKE CREATE ON SCHEMA public FROM PUBLIC;
+      REVOKE ALL ON SCHEMA public FROM PUBLIC;
+
+      CREATE SCHEMA dist_app;
+
+      CREATE ROLE $POSTS_DB_USER
+        LOGIN
+        PASSWORD '$POSTS_DB_PASSWORD'
+        NOSUPERUSER
+        NOCREATEDB
+        NOCREATEROLE
+        NOINHERIT;
+
+      GRANT USAGE ON SCHEMA dist_app TO $POSTS_DB_USER;
+      GRANT SELECT, INSERT, UPDATE, DELETE ON ALL TABLES IN SCHEMA dist_app TO $POSTS_DB_USER;
+      ALTER DEFAULT PRIVILEGES IN SCHEMA dist_app
+        GRANT SELECT, INSERT, UPDATE, DELETE ON TABLES TO $POSTS_DB_USER;
+
+      CREATE TABLE dist_app.posts (
+        id         UUID        PRIMARY KEY DEFAULT gen_random_uuid(),
+        title      TEXT        NOT NULL,
+        created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+      );
+    EOSQL

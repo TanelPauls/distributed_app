@@ -1,4 +1,4 @@
-const CommentsList = ({ comments }) => {
+const CommentsList = ({ comments = [] }) => {
     const renderedComments = comments.map((comment) => {
         let content;
 

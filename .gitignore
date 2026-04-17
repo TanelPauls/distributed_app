@@ -29,3 +29,4 @@ dist-ssr
 /infra/cloudflared/config.yml
 
 /infra/k8s/cloudflared-secret.yaml
+/infra/k8s/postgres-secret.yaml

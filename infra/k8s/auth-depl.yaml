@@ -15,3 +15,14 @@ spec:
       containers:
         - name: auth
           image: tanelpauls/distributed_app_auth
+          env:
+            - name: POSTS_DB_USER
+              valueFrom:
+                secretKeyRef:
+                  name: postgres-secret
+                  key: POSTS_DB_USER
+            - name: POSTS_DB_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: postgres-secret
+                  key: POSTS_DB_PASSWORD

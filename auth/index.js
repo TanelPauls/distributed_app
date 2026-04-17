@@ -18,11 +18,16 @@ const pool = new Pool({
     password: process.env.POSTS_DB_PASSWORD,
 });
 
-app.get('/login', async (req, res) => {
+app.post('/login', async (req, res) => {
+    const { email, password } = req.body;
     const result = await pool.query(
-        'SELECT * FROM dist_app.users',
+        'SELECT * FROM dist_app.users WHERE email = $1 AND password = $2',
+        [email, password]
     );
-    res.json(result.rows);
+    if (result.rows.length === 0) {
+        return res.status(401).json({ error: 'Invalid credentials' });
+    }
+    res.json({ user: result.rows[0] });
 });
 
 app.get('/', (req,res) => {

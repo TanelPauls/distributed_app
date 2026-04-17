@@ -19,17 +19,17 @@ const PostList = ({ refreshKey, onCreated }) => {
         fetchPosts();
     }, [refreshKey]);
 
-    console.log(posts);
-
-    const postsForRender = posts.map(post => (
-        <div className="card" style={{ width: '30%', marginBottom: '20px'}} key={post.id}>
-            <div className="card-body">
+    const postsForRender = Array.isArray(posts)
+        ? posts.map(post => (
+            <div className="card" style={{ width: '30%', marginBottom: '20px'}} key={post.id}>
+                <div className="card-body">
                 <h3>{post.title}</h3>
                 <CommentsList comments={post.comments}/>
                 <CommentCreate postId={post.id} onCreated={onCreated}/>
+                </div>
             </div>
-        </div>
-    ))
+            ))
+        : null;
 
     return (
         <div className="d-flex flex-row flex-wrap justify-content-between">

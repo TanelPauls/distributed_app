@@ -1,5 +1,7 @@
 const express = require('express');
 const cors = require('cors');
+const cookieParser = require('cookie-parser');
+
 const loginRoute = require('./controllers/login.js');
 const getMeRoute = require('./controllers/getMe.js');
 
@@ -9,6 +11,7 @@ app.use(cors({
     origin: 'http://localhost:5173'
 }));
 app.use(express.json());
+app.use(cookieParser());
 
 app.use(loginRoute);
 app.use(getMeRoute);

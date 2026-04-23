@@ -1,21 +1,34 @@
 const express = require('express');
+const auth = require('../middleware/auth');
+const { Pool } = require('pg');
+
 const router = express.Router();
-const jwt = require('jsonwebtoken');
+const pool = new Pool({
+    host: 'postgres',
+    port: 5432,
+    database: 'dist_app',
+    user: process.env.POSTS_DB_USER,
+    password: process.env.POSTS_DB_PASSWORD,
+});
 
-router.get('/me', (req, res) => {
+router.get('/me', auth, async (req, res) => {
     try {
-        const token = req.headers.authorization?.split(' ')[1];
+        const result = await pool.query(
+            'SELECT id, email FROM dist_app.users WHERE id = $1',
+            [req.user.id]
+        );
 
-        if (!token) {
-            return res.status(401).json({ error: 'No token' });
+        const user = result.rows[0];
+
+        if (!user) {
+            return res.status(404).json({ message: 'User not found' });
         }
 
-        const decoded = jwt.verify(token, process.env.JWT_SECRET);
-
-        res.json({ user: decoded });
+        res.json({ user });
 
     } catch (err) {
-        return res.status(401).json({ error: 'Invalid token' });
+        console.error(err);
+        res.status(500).json({ message: 'Server error' });
     }
 });
 

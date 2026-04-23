@@ -10,7 +10,10 @@ const CommentCreate = ({postId, onCreated}) => {
 
     const onSubmit = async (event) => {
         event.preventDefault();
-        await axios.post(`/posts/${postId}/comments`, {content});
+        const token = localStorage.getItem('token');
+        await axios.post(`/posts/${postId}/comments`, {content}, {
+            headers: { Authorization: `Bearer ${token}` }
+        });
         setContent('');
         onCreated();
     }

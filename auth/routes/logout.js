@@ -14,6 +14,7 @@ router.post('/logout', async (req, res) => {
       } catch (err) {
         // token is invalid/expired, just clear the cookie and move on
         res.clearCookie('refresh_token', { path: '/auth/refresh' });
+        res.clearCookie('access_token');
         return res.json({ message: 'Logged out' });
       }
 

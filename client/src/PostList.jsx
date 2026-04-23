@@ -9,7 +9,10 @@ const PostList = ({ refreshKey, onCreated }) => {
     useEffect(()=>{
         const fetchPosts = async ()  => {
             try {
-                const res = await axios.get('/posts');
+                const token = localStorage.getItem('token');
+                const res = await axios.get('/posts', {
+                    headers: { Authorization: `Bearer ${token}` }
+                });
                 const posts = res.data;
                 setPosts(posts);
             } catch(err) {

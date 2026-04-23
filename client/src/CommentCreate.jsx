@@ -8,12 +8,30 @@ const CommentCreate = ({postId, onCreated}) => {
         setContent(event.target.value)
     };
 
-    const onSubmit = async (event) => {
-        event.preventDefault();
-        const token = localStorage.getItem('token');
-        await axios.post(`/posts/${postId}/comments`, {content}, {
+    const postComment = async (token) => {
+        return axios.post(`/posts/${postId}/comments`, {content}, {
             headers: { Authorization: `Bearer ${token}` }
         });
+    };
+
+    const onSubmit = async (event) => {
+        event.preventDefault();
+        let token = localStorage.getItem('token');
+        try {
+            await postComment(token);
+        } catch (err) {
+            if (err.response?.status !== 401) throw err;
+
+            const refreshRes = await fetch('https://hajusrakendus.neiwa.eu/auth/refresh', {
+                method: 'POST',
+                credentials: 'include',
+            });
+            if (!refreshRes.ok) throw new Error('Session expired, please log in again');
+
+            const { accessToken } = await refreshRes.json();
+            localStorage.setItem('token', accessToken);
+            await postComment(accessToken);
+        }
         setContent('');
         onCreated();
     }

@@ -18,7 +18,20 @@ const pool = new Pool({
     password: process.env.POSTS_DB_PASSWORD,
 });
 
-app.get('/posts', async (req, res) => {
+async function verifyWithAuthService(req, res, next) {
+    try {
+        const authHeader = req.headers.authorization || '';
+        const response = await axios.get('http://auth:5006/auth/verify', {
+            headers: { authorization: authHeader }
+        });
+        req.user = response.data.user;
+        next();
+    } catch (err) {
+        return res.status(401).json({ message: 'Unauthorized' });
+    }
+}
+
+app.get('/posts', verifyWithAuthService, async (req, res) => {
     const result = await pool.query('SELECT * FROM dist_app.posts ORDER BY created_at ASC');
     res.json(result.rows);
 });

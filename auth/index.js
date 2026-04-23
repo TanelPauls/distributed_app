@@ -2,15 +2,17 @@ const express = require('express');
 const cors = require('cors');
 const cookieParser = require('cookie-parser');
 
-const loginRoute = require('./controllers/login.js');
-const getMeRoute = require('./controllers/getMe.js');
-const refreshRoute = require('./controllers/refresh.js');
-const logoutRoute = require('./controllers/logout.js');
+const loginRoute = require('./routes/login.js');
+const getMeRoute = require('./routes/getMe.js');
+const refreshRoute = require('./routes/refresh.js');
+const logoutRoute = require('./routes/logout.js');
+const verifyRoute = require('./routes/verify.js');
 
 const app = express();
 
 app.use(cors({
-    origin: 'http://localhost:5173'
+    origin: 'https://hajusrakendus.neiwa.eu',
+    credentials: true,
 }));
 app.use(express.json());
 app.use(cookieParser());
@@ -19,6 +21,7 @@ app.use(loginRoute);
 app.use(getMeRoute);
 app.use(refreshRoute);
 app.use(logoutRoute);
+app.use(verifyRoute);
 
 app.listen(5006, '0.0.0.0', () => {
     console.log('Comments service.');

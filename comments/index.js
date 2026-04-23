@@ -18,6 +18,19 @@ const pool = new Pool({
     password: process.env.POSTS_DB_PASSWORD,
 });
 
+async function verifyWithAuthService(req, res, next) {
+    try {
+        const authHeader = req.headers.authorization || '';
+        const response = await axios.get('http://auth:5006/auth/verify', {
+            headers: { authorization: authHeader }
+        });
+        req.user = response.data.user;
+        next();
+    } catch (err) {
+        return res.status(401).json({ message: 'Unauthorized' });
+    }
+}
+
 app.get('/posts/:id/comments', async (req, res) => {
     const result = await pool.query(
         'SELECT * FROM dist_app.comments WHERE post_id = $1 ORDER BY created_at ASC',
@@ -31,7 +44,7 @@ app.get('/posts/:id/comments', async (req, res) => {
     })));
 });
 
-app.post('/posts/:id/comments', async (req, res) => {
+app.post('/posts/:id/comments', verifyWithAuthService, async (req, res) => {
     const result = await pool.query(
         'INSERT INTO dist_app.comments (post_id, content) VALUES ($1, $2) RETURNING *',
         [req.params.id, req.body.content]

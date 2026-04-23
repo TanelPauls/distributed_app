@@ -31,13 +31,37 @@ function App() {
         if (!token) return;
 
         const res = await fetch("https://hajusrakendus.neiwa.eu/auth/me", {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
+          headers: { Authorization: `Bearer ${token}` },
           credentials: "include",
         });
 
-        if (!res.ok) throw new Error();
+        if (res.status === 401) {
+          // access token expired, try refresh
+          const refreshRes = await fetch("https://hajusrakendus.neiwa.eu/auth/refresh", {
+            method: "POST",
+            credentials: "include",  // sends the httpOnly cookie
+          });
+
+          if (!refreshRes.ok) {
+            // refresh token also expired/invalid, log out
+            localStorage.removeItem("token");
+            setUser(null);
+            return;
+          }
+
+          const refreshData = await refreshRes.json();
+          localStorage.setItem("token", refreshData.accessToken);  // store new access token
+
+          // try /me again with new token
+          const retryRes = await fetch("https://hajusrakendus.neiwa.eu/auth/me", {
+            headers: { Authorization: `Bearer ${refreshData.accessToken}` },
+            credentials: "include",
+          });
+
+          const retryData = await retryRes.json();
+          setUser(retryData.user);
+          return;
+        }
 
         const data = await res.json();
         setUser(data.user);

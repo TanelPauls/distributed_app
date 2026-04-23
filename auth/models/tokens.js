@@ -11,6 +11,7 @@ const pool = new Pool({
     password: process.env.POSTS_DB_PASSWORD,
 });
 
+const ACCESS_TTL = '10s';
 const REFRESH_TTL_SEC = 60 * 60 * 24 * 7;
 
 function createJti() {
@@ -83,7 +84,7 @@ async function replaceToken(oldId, newJti) {
 
 function signAccessToken(user) {
   const payload = { id: user.id, email: user.email };
-  return jwt.sign(payload, process.env.JWT_SECRET, { expiresIn: '15m' });
+  return jwt.sign(payload, process.env.JWT_SECRET, { expiresIn: ACCESS_TTL });
 }
 
 function signRefreshToken(user, jti) {

@@ -1,7 +1,15 @@
 const express = require('express');
 const router = express.Router();
 const bcrypt = require('bcryptjs');
-const jwt = require('jsonwebtoken');
+
+const {
+  createJti,
+  signAccessToken,
+  signRefreshToken,
+  persistRefreshToken,
+  setRefreshCookie
+} = require('../models/tokens');
+
 const { Pool } = require('pg');
 
 const pool = new Pool({
@@ -33,14 +41,22 @@ router.post('/login', async (req, res) => {
             return res.status(401).json({ error: 'Invalid credentials' });
         }
 
-        const payload = { id: user.id, email: user.email };
+        const accessToken = signAccessToken(user);
 
-        const token = jwt.sign(payload, process.env.JWT_SECRET, {
-            expiresIn: '15m'
+        const jti = createJti();
+        const refreshToken = signRefreshToken(user, jti);
+
+        await persistRefreshToken({
+            user,
+            refreshToken,
+            jti,
+            ip: req.ip,
+            userAgent: req.headers['user-agent'] || ''
         });
 
-        res.json({ token });
+        setRefreshCookie(res, refreshToken);
 
+        res.json({ accessToken });
     } catch (err) {
         console.error(err);
         res.status(500).json({ message: 'Server error' });

@@ -103,7 +103,7 @@ function setRefreshCookie(res, refreshToken) {
     httpOnly: true,
     secure: true,
     sameSite: 'strict',
-    path: '/api/auth/refresh',
+    path: '/auth/refresh',
     maxAge: REFRESH_TTL_SEC * 1000
   });
 }
@@ -132,7 +132,9 @@ async function rotateRefreshToken(oldDoc, user, req, res) {
 }
 
 module.exports = {
+  findByToken,
   hashToken,
+  revokeToken,
   createJti,
   signAccessToken,
   signRefreshToken,

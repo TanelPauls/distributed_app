@@ -10,7 +10,16 @@ function App() {
 
   const refresh = () => setRefreshKey(k => k + 1);
 
-  const logout = () => {
+  const logout = async () => {
+    try {
+      await fetch("https://hajusrakendus.neiwa.eu/auth/logout", {
+        method: "POST",
+        credentials: "include",
+      });
+    } catch (err) {
+      console.error("Logout error:", err);
+    }
+
     localStorage.removeItem("token");
     setUser(null);
   };
@@ -25,6 +34,7 @@ function App() {
           headers: {
             Authorization: `Bearer ${token}`,
           },
+          credentials: "include",
         });
 
         if (!res.ok) throw new Error();

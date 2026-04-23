@@ -31,3 +31,8 @@ spec:
                 secretKeyRef:
                   name: postgres-secret
                   key: JWT_SECRET
+            - name: REFRESH_TOKEN_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: postgres-secret
+                  key: REFRESH_TOKEN_SECRET

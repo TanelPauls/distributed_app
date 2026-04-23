@@ -27,11 +27,11 @@ function LoginPage({ setUser }) {
         throw new Error(data.error || "Login failed");
       }
 
-      localStorage.setItem("token", data.token);
+      localStorage.setItem("token", data.accessToken);
 
       let payload;
       try {
-        payload = JSON.parse(atob(data.token.split('.')[1]));
+        payload = JSON.parse(atob(data.accessToken.split('.')[1]));
       } catch {
         throw new Error("Invalid token");
       }

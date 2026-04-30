@@ -18,3 +18,7 @@ cd infra/k8s/
 
 kubectl delete -k .
 kubectl apply -k . 
+
+# if whining about space:
+docker system prune -a
+minikube ssh -- docker system prune -a

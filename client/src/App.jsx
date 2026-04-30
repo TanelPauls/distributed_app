@@ -22,6 +22,7 @@ function App() {
 
     localStorage.removeItem("token");
     setUser(null);
+    refresh();
   };
 
   useEffect(() => {
@@ -103,7 +104,7 @@ function App() {
 
               <hr />
               <h1>Posts</h1>
-              <PostList refreshKey={refreshKey} onCreated={refresh} />
+              <PostList refreshKey={refreshKey} onCreated={refresh} user={user} />
             </>
           }
         />

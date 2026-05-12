@@ -11,7 +11,7 @@ const pool = new Pool({
     password: process.env.POSTS_DB_PASSWORD,
 });
 
-const ACCESS_TTL = '10s';
+const ACCESS_TTL = '15m';
 const REFRESH_TTL_SEC = 60 * 60 * 24 * 7;
 
 function createJti() {

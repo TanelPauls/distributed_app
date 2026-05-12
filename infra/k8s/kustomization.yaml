@@ -24,3 +24,4 @@ resources:
   - client-serv.yaml
   - auth-depl.yaml
   - auth-serv.yaml
+  - swagger-depl.yaml

@@ -1,0 +1,427 @@
+openapi: 3.0.3
+info:
+  title: Blog Microservices API
+  version: 1.0.0
+  description: |
+    REST API for a blog platform built with a microservices architecture.
+
+    **Services behind this API:**
+    - **posts-srv** — creates posts
+    - **query-srv** — reads posts with embedded comments (from DB join)
+    - **comments-srv** — lists and creates comments per post
+    - **auth-srv** — handles login, token refresh, logout, and user profile
+
+    ## How to authenticate
+    1. Call `POST /auth/login` with your email and password
+    2. Copy the `accessToken` from the response
+    3. Click the **Authorize** button (top right), paste `Bearer <token>`, click Authorize
+    4. Protected endpoints will now work with "Try it out"
+  contact:
+    name: Blog API Team
+    email: paulstanel@protonmail.com
+
+servers:
+  - url: https://hajusrakendus.neiwa.eu
+
+tags:
+  - name: Auth
+    description: User authentication — login, token refresh, logout, and current user profile
+  - name: Posts
+    description: Create posts (posts-srv) and read posts with embedded comments (query-srv)
+  - name: Comments
+    description: List and create comments on posts (comments-srv)
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+paths:
+
+  /posts:
+    get:
+      tags: [Posts]
+      summary: Get all posts with their comments
+      description: |
+        Returns all posts ordered by creation date. Each post includes a `comments` array
+        with all its comments (pending, approved, and rejected).
+
+        **Requires authentication.** Obtain a token via `POST /auth/login`, then click
+        **Authorize** above and enter `Bearer <your token>`.
+      security:
+        - bearerAuth: []
+      responses:
+        "200":
+          description: List of posts with embedded comments
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    id:
+                      type: string
+                      format: uuid
+                    title:
+                      type: string
+                    created_at:
+                      type: string
+                      format: date-time
+                    comments:
+                      type: array
+                      items:
+                        type: object
+                        properties:
+                          id:
+                            type: string
+                            format: uuid
+                          postId:
+                            type: string
+                            format: uuid
+                          content:
+                            type: string
+                          status:
+                            type: string
+                            enum: [pending, approved, rejected]
+              example:
+                - id: "a1b2c3d4-e5f6-7890-abcd-ef1234567890"
+                  title: "Hello Microservices"
+                  created_at: "2024-01-15T10:30:00.000Z"
+                  comments:
+                    - id: "b2c3d4e5-f6a7-8901-bcde-f12345678901"
+                      postId: "a1b2c3d4-e5f6-7890-abcd-ef1234567890"
+                      content: "Great post!"
+                      status: "approved"
+        "401":
+          description: Missing or invalid access token
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+              example:
+                message: "Unauthorized"
+        "503":
+          description: Auth service unreachable
+
+    post:
+      tags: [Posts]
+      summary: Create a new post
+      description: |
+        Creates a new blog post. No authentication required.
+
+        After creation a `PostCreated` event is emitted to the event-bus so the
+        query service indexes the new post immediately.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [title]
+              properties:
+                title:
+                  type: string
+                  description: Title of the new post
+            example:
+              title: "My first microservices post"
+      responses:
+        "201":
+          description: Post created successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  post:
+                    type: object
+                    properties:
+                      id:
+                        type: string
+                        format: uuid
+                      title:
+                        type: string
+                      created_at:
+                        type: string
+                        format: date-time
+              example:
+                post:
+                  id: "a1b2c3d4-e5f6-7890-abcd-ef1234567890"
+                  title: "My first microservices post"
+                  created_at: "2024-01-15T10:30:00.000Z"
+
+  /posts/{id}/comments:
+    get:
+      tags: [Comments]
+      summary: List all comments for a post
+      description: |
+        Returns all comments for the given post ordered by creation date.
+        No authentication required — comments are publicly readable.
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+            format: uuid
+          description: UUID of the post
+          example: "a1b2c3d4-e5f6-7890-abcd-ef1234567890"
+      responses:
+        "200":
+          description: List of comments
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    id:
+                      type: string
+                      format: uuid
+                    postId:
+                      type: string
+                      format: uuid
+                    content:
+                      type: string
+                    status:
+                      type: string
+                      enum: [pending, approved, rejected]
+              example:
+                - id: "b2c3d4e5-f6a7-8901-bcde-f12345678901"
+                  postId: "a1b2c3d4-e5f6-7890-abcd-ef1234567890"
+                  content: "Great post!"
+                  status: "approved"
+
+    post:
+      tags: [Comments]
+      summary: Add a comment to a post
+      description: |
+        Creates a new comment on the given post. **Requires authentication.**
+
+        New comments start with status `pending` and go through the moderation
+        service before becoming `approved` or `rejected`. A `CommentCreated` event
+        is emitted to the event-bus after creation.
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+            format: uuid
+          description: UUID of the post to comment on
+          example: "a1b2c3d4-e5f6-7890-abcd-ef1234567890"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [content]
+              properties:
+                content:
+                  type: string
+                  description: The comment text
+            example:
+              content: "This is a great example of microservices!"
+      responses:
+        "201":
+          description: Comment created, awaiting moderation
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  id:
+                    type: string
+                    format: uuid
+                  postId:
+                    type: string
+                    format: uuid
+                  content:
+                    type: string
+                  status:
+                    type: string
+                    enum: [pending, approved, rejected]
+              example:
+                id: "b2c3d4e5-f6a7-8901-bcde-f12345678901"
+                postId: "a1b2c3d4-e5f6-7890-abcd-ef1234567890"
+                content: "This is a great example of microservices!"
+                status: "pending"
+        "401":
+          description: Missing or invalid access token
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+              example:
+                message: "Unauthorized"
+
+  /auth/login:
+    post:
+      tags: [Auth]
+      summary: Login with email and password
+      description: |
+        Authenticates a user and returns a short-lived JWT `accessToken`.
+        Also sets an HttpOnly `refresh_token` cookie used by `POST /auth/refresh`.
+
+        **After logging in:** copy the `accessToken` value, click **Authorize** (top right),
+        and enter `Bearer <token>`. All protected endpoints will then work.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [email, password]
+              properties:
+                email:
+                  type: string
+                  format: email
+                password:
+                  type: string
+                  format: password
+            example:
+              email: "user@example.com"
+              password: "mypassword123"
+      responses:
+        "200":
+          description: Login successful — use the accessToken in the Authorize button
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  accessToken:
+                    type: string
+              example:
+                accessToken: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjEiLCJlbWFpbCI6InVzZXJAZXhhbXBsZS5jb20ifQ.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c"
+        "401":
+          description: Invalid email or password
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+              example:
+                error: "Invalid credentials"
+
+  /auth/refresh:
+    post:
+      tags: [Auth]
+      summary: Refresh the access token using the refresh cookie
+      description: |
+        Issues a new `accessToken` using the HttpOnly `refresh_token` cookie set during login.
+        The old refresh token is rotated (invalidated) and a new one is set in the cookie.
+
+        No request body needed — the browser sends the cookie automatically.
+        The refresh token is single-use; reusing a revoked token invalidates the session.
+      responses:
+        "200":
+          description: New access token issued
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  accessToken:
+                    type: string
+              example:
+                accessToken: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjEifQ.newRotatedToken"
+        "401":
+          description: Refresh token missing, expired, or revoked
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+              example:
+                message: "Refresh token expired"
+
+  /auth/logout:
+    post:
+      tags: [Auth]
+      summary: Logout and revoke the refresh token
+      description: |
+        Revokes the current refresh token in the database and clears the `refresh_token` cookie.
+        The access token remains valid until its natural expiry (short TTL), but the session
+        cannot be refreshed after logout.
+      responses:
+        "200":
+          description: Logged out successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+              example:
+                message: "Logged out"
+
+  /auth/me:
+    get:
+      tags: [Auth]
+      summary: Get the current user's profile
+      description: |
+        Returns the authenticated user's ID and email.
+        **Requires authentication** — include a Bearer token via the Authorize button.
+      security:
+        - bearerAuth: []
+      responses:
+        "200":
+          description: Current user profile
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  user:
+                    type: object
+                    properties:
+                      id:
+                        type: string
+                        format: uuid
+                      email:
+                        type: string
+                        format: email
+              example:
+                user:
+                  id: "c3d4e5f6-a7b8-9012-cdef-012345678901"
+                  email: "user@example.com"
+        "401":
+          description: Missing or invalid token
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+              example:
+                message: "Unauthorized"
+        "404":
+          description: User not found in database
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+              example:
+                message: "User not found"
